@@ -170,6 +170,25 @@ class MysqlAdapter extends PdoAdapter implements AdapterInterface
     /**
      * {@inheritdoc}
      */
+    public function getTables()
+    {
+        $rows = $this->fetchAll('show tables');
+
+        $tables = [];
+        foreach ($rows as $row) {
+            $table = $row[0];
+            if ($table === $this->schemaTableName) {
+                continue;
+            }
+            $tables[] = $table;
+        }
+
+        return $tables;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function hasTable($tableName)
     {
         $options = $this->getOptions();
@@ -477,7 +496,7 @@ class MysqlAdapter extends PdoAdapter implements AdapterInterface
      * @param string $tableName Table Name
      * @return array
      */
-    protected function getIndexes($tableName)
+    public function getIndexes($tableName)
     {
         $indexes = array();
         $rows = $this->fetchAll(sprintf('SHOW INDEXES FROM %s', $this->quoteTableName($tableName)));
@@ -486,6 +505,7 @@ class MysqlAdapter extends PdoAdapter implements AdapterInterface
                 $indexes[$row['Key_name']] = array('columns' => array());
             }
             $indexes[$row['Key_name']]['columns'][] = strtolower($row['Column_name']);
+            $indexes[$row['Key_name']]['unique'] = !$row['Non_unique'];
         }
         return $indexes;
     }
@@ -616,7 +636,7 @@ class MysqlAdapter extends PdoAdapter implements AdapterInterface
      * @param string $tableName Table Name
      * @return array
      */
-    protected function getForeignKeys($tableName)
+    public function getForeignKeys($tableName)
     {
         $foreignKeys = array();
         $rows = $this->fetchAll(sprintf(

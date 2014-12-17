@@ -224,6 +224,14 @@ interface AdapterInterface
      */
     public function hasTable($tableName);
 
+
+    /**
+     * Get a list of tables in the database (excluding schemaTableName)
+     *
+     * @return array
+     */
+    public function getTables();
+
     /**
      * Creates the specified database table.
      *
